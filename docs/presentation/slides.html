@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>SkillPick 발표자료</title>
+<link rel="stylesheet" href="../../renderer/styles/tokens.css">
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-ui); word-break: keep-all; }
+  .slide { width: 1280px; height: 720px; padding: var(--s-16) var(--s-16) var(--s-10); display: flex; flex-direction: column; gap: var(--s-6); page-break-after: always; overflow: hidden; position: relative; }
+  .slide:last-child { page-break-after: auto; }
+  h1 { font-size: 64px; margin: 0; line-height: 1.15; }
+  h2 { font-size: 40px; margin: 0; line-height: 1.2; }
+  p, li { font-size: 24px; line-height: 1.5; margin: 0; }
+  .dim { color: var(--text-dim); }
+  .accent { color: var(--accent); }
+  .mono { font-family: var(--font-mono); }
+  .cols { display: flex; gap: var(--s-8); flex: 1; min-height: 0; }
+  .col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--s-4); }
+  .card { background: var(--surface); border: var(--line-w) solid var(--line); border-radius: var(--r-card); padding: var(--s-6); }
+  .card h3 { margin: 0 0 var(--s-2); font-size: 24px; color: var(--accent); font-weight: var(--fw-medium); }
+  ul { margin: 0; padding-left: var(--s-6); display: flex; flex-direction: column; gap: var(--s-2); }
+  img.shot { width: 100%; border-radius: var(--r-card); border: var(--line-w) solid var(--line); display: block; }
+  .crop { overflow: hidden; border-radius: var(--r-card); border: var(--line-w) solid var(--line); }
+  .crop img { width: 100%; display: block; }
+  .num { font-size: 64px; font-weight: var(--fw-bold); color: var(--ok); line-height: 1; }
+  .stat { display: flex; flex-direction: column; gap: var(--s-2); }
+  .flow { display: flex; align-items: stretch; gap: var(--s-3); }
+  .flow .box { flex: 1; background: var(--surface); border: var(--line-w) solid var(--line); border-radius: var(--r-card); padding: var(--s-4); font-size: 20px; line-height: 1.4; }
+  .flow .arrow { align-self: center; color: var(--text-dim); font-size: 28px; }
+  .pn { position: absolute; right: var(--s-8); bottom: var(--s-5); color: var(--text-dim); font-size: 16px; }
+</style>
+</head>
+<body>
+
+<section class="slide" style="justify-content:center">
+  <p class="mono accent">SkillPick</p>
+  <h1>디자인 스킬 여러 개를<br>URL 하나로 동시에 돌려 보고 고르세요</h1>
+  <p class="dim">자기 서비스를 직접 만드는 개발자와 1인 창업자를 위한 데스크톱 앱</p>
+  <p class="dim">태지로 · 박태영 · 1인 개발</p>
+</section>
+
+<section class="slide">
+  <h2>홈페이지 디자인은 매번 고민이고, 스킬은 너무 많습니다</h2>
+  <div class="cols">
+    <div class="card col"><h3>대상</h3><p>자기 서비스를 직접 만드는 개발자, 1인 창업자</p></div>
+    <div class="card col"><h3>불편</h3><ul><li>어떤 디자인 스킬을 쓸지 고르지 못함</li><li>하나씩 돌리면 시간이 쌓임</li><li>시안이 가격이나 버튼을 빼먹어도 눈으로 찾아야 함</li></ul></div>
+    <div class="card col"><h3>기존 방식</h3><p>스킬 하나로 시키고, 별로면 다른 스킬로 다시 시킴. 나란히 비교할 수 없음</p></div>
+  </div>
+  <p class="dim">이 불편이 얼마나 흔한지 보여 주는 설문은 아직 없고, 지금 근거는 작성자 본인의 경험입니다</p>
+</section>
+
+<section class="slide">
+  <h2>URL 하나, 스킬 여러 개, 같은 기준으로 비교</h2>
+  <div class="cols">
+    <div class="col">
+      <ul>
+        <li>원본에서 제목·버튼·가격·링크를 읽어 <b>지켜야 할 것</b>을 뽑음</li>
+        <li>스킬마다 Kiro CLI가 동시에 시안을 만듦</li>
+        <li>시안이 지켜야 할 것을 담았는지 <b>코드가 검사</b>함</li>
+        <li>실제로 그려진 시안을 나란히 보고 고름</li>
+      </ul>
+    </div>
+    <div class="col"><img class="shot" src="../screens/03-confirm.png" alt="원본 확인 화면"></div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>데모: 생성 중과 비교 화면</h2>
+  <div class="cols">
+    <div class="col"><div class="crop"><img src="../screens/04-running.png" alt="생성 중 화면"></div><p class="dim">스킬 세 개가 같이 도는 모습</p></div>
+    <div class="col"><div class="crop"><img src="../screens/05-compare-desktop.png" alt="비교 화면"></div><p class="dim">원본과 시안 세 개, 모두 25/25</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>구조: 판정은 코드, 생성만 Kiro CLI</h2>
+  <div class="flow">
+    <div class="box">원본 수집<br><span class="dim mono">capture.js</span></div><span class="arrow">›</span>
+    <div class="box">지켜야 할 것<br><span class="dim mono">mustKeep.js</span></div><span class="arrow">›</span>
+    <div class="box">동시 실행 풀<br><span class="dim mono">engine.js</span></div><span class="arrow">›</span>
+    <div class="box">Kiro CLI × 스킬 수<br><span class="dim mono">designer 에이전트</span></div><span class="arrow">›</span>
+    <div class="box">검사<br><span class="dim mono">checker.js</span></div><span class="arrow">›</span>
+    <div class="box">비교 격자<br><span class="dim mono">compare.js</span></div>
+  </div>
+  <div class="cols">
+    <div class="card col"><h3>정답이 있는 계산은 코드로</h3><p>지켜야 할 것 선정과 통과 판정은 순수 함수와 단위 시험 121개로 고정</p></div>
+    <div class="card col"><h3>시안은 격리해서 표시</h3><p>별도 세션, Node 접근 없음, CSP 헤더 강제, 이동과 새 창 차단</p></div>
+    <div class="card col"><h3>정직한 진행 표시</h3><p>실제 프로세스 수와 시작·종료 시각만 표시. 가짜 진행률과 재생 없음</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>Kiro 활용</h2>
+  <div class="cols">
+    <div class="card col"><h3>Spec · Steering</h3><p>요구사항, 설계, 작업 목록과 제품·기술·보안 규칙을 <span class="mono">.kiro/</span>에 두고 Kiro가 따라 구현. 문서 작성은 Claude Code</p></div>
+    <div class="card col"><h3>Hooks</h3><p><span class="mono">src/core</span> 저장 시 <span class="mono">npm test</span> 실행</p></div>
+    <div class="card col"><h3>앱의 엔진</h3><p>Kiro CLI 비대화 모드와 커스텀 에이전트로 시안을 만듦. 스파이크로 동시 실행과 보안 한계를 직접 확인</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>실제로 잰 값과 한계</h2>
+  <div class="cols">
+    <div class="col">
+      <div class="stat"><span class="num">65초</span><p>스킬 3개 시안이 모두 끝나기까지 (한 사이트, 한 번 측정)</p></div>
+      <div class="stat"><span class="num">25/25</span><p>세 시안 모두 지켜야 할 것을 담음. 다시 고치기 0번</p></div>
+      <div class="stat"><span class="num">12ms</span><p>세 Kiro CLI 시작 시각 차이. 43.6초 동안 함께 실행</p></div>
+    </div>
+    <div class="card col"><h3>알려진 한계</h3>
+      <ul>
+        <li><span class="mono">--trust-tools</span>를 주면 작업 폴더 밖 파일 접근이 막히지 않음. 셸 실행은 막혀 있음</li>
+        <li>전역 steering과 스킬이 시안 생성에 섞일 수 있음</li>
+        <li>같이 스크롤과 예비 엔진은 만들지 않음</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
