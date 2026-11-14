@@ -1,11 +1,12 @@
 import { h, mount, relativeTime } from './lib/dom.js';
+import { sidebarGroup } from '../src/core/compareView.js';
 
 // 화면 이름 → 단계 표시 위치 (입력 › 확인 › 생성 › 비교)
 export const STEPS = ['입력', '확인', '생성', '비교'];
 const STEP_OF = { setup: -1, newRun: 0, confirm: 1, running: 2, compare: 3, detail: 3, picked: 3, settings: -1, home: -1 };
 const STEP_SCREEN = ['newRun', 'confirm', 'running', 'compare'];
 // 창 높이를 꽉 채우고 안쪽에서 스크롤하는 화면
-const FILL_SCREENS = new Set(['confirm', 'compare', 'detail']);
+const FILL_SCREENS = new Set(['newRun', 'confirm', 'compare', 'detail']);
 
 // 앱 전체 상태. 화면 모듈이 읽고 고친다.
 export const state = {
@@ -25,6 +26,8 @@ export const state = {
   preflight: null,
   engineName: 'Kiro CLI',
   viewMode: 'desktop',
+  // 사이드바 접힘. 비교 단계(비교·크게 보기)는 기본으로 접고, 사용자가 바꾸면 그대로 기억한다
+  sidebarCollapsed: { compare: true, other: false },
   runtime: { running: 0, queued: 0 },
 };
 
@@ -43,6 +46,21 @@ export function go(name, params = {}) {
 }
 
 export function refreshShell() { renderShell(); }
+
+const isSidebarCollapsed = () => state.sidebarCollapsed[sidebarGroup(state.screen)];
+
+function applySidebar() {
+  if (!shellEls) return;
+  shellEls.main.classList.toggle('side-collapsed', isSidebarCollapsed());
+}
+
+/** 사이드바를 접거나 편다. 화면을 다시 그리지 않아 시안 뷰가 다시 불러와지지 않는다 */
+export function toggleSidebar() {
+  const group = sidebarGroup(state.screen);
+  state.sidebarCollapsed[group] = !state.sidebarCollapsed[group];
+  applySidebar();
+  return state.sidebarCollapsed[group];
+}
 
 export async function refreshRecent() {
   state.recent = await window.skillpick.listRuns();
@@ -99,8 +117,10 @@ function renderShell() {
       toolbar: h('header', { class: 'toolbar' }),
       sidebar: h('aside', { class: 'sidebar' }),
       content: h('main', { class: 'content' }),
+      main: h('div', { class: 'main' }),
     };
-    mount(root, h('div', { class: 'shell' }, shellEls.toolbar, h('div', { class: 'main' }, shellEls.sidebar, shellEls.content)));
+    shellEls.main.append(shellEls.sidebar, shellEls.content);
+    mount(root, h('div', { class: 'shell' }, shellEls.toolbar, shellEls.main));
   }
   mount(shellEls.toolbar,
     h('span', { class: 'brand' }, 'SkillPick'),
@@ -108,6 +128,7 @@ function renderShell() {
     h('span', { class: 'spacer' }),
     h('button', { class: 'icon-btn', title: '설정', 'aria-label': '설정', onclick: () => go('settings') }, '⚙'));
   renderSidebar();
+  applySidebar();
   const render = screens.get(state.screen);
   shellEls.content.classList.toggle('flush', state.screen === 'detail');
   shellEls.content.classList.toggle('fill', FILL_SCREENS.has(state.screen));
