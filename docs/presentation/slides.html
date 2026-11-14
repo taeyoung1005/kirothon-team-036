@@ -10,112 +10,221 @@
   html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-ui); word-break: keep-all; }
   .slide { width: 1280px; height: 720px; padding: var(--s-16) var(--s-16) var(--s-10); display: flex; flex-direction: column; gap: var(--s-6); page-break-after: always; overflow: hidden; position: relative; }
   .slide:last-child { page-break-after: auto; }
-  h1 { font-size: 64px; margin: 0; line-height: 1.15; }
+  h1 { font-size: 60px; margin: 0; line-height: 1.2; }
   h2 { font-size: 40px; margin: 0; line-height: 1.2; }
   p, li { font-size: 24px; line-height: 1.5; margin: 0; }
   .dim { color: var(--text-dim); }
   .accent { color: var(--accent); }
+  .ok { color: var(--ok); }
   .mono { font-family: var(--font-mono); }
-  .cols { display: flex; gap: var(--s-8); flex: 1; min-height: 0; }
+  .kicker { font-family: var(--font-mono); color: var(--accent); font-size: 18px; letter-spacing: 0.04em; }
+  .cols { display: flex; gap: var(--s-8); flex: 0 0 auto; }
   .col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--s-4); }
   .card { background: var(--surface); border: var(--line-w) solid var(--line); border-radius: var(--r-card); padding: var(--s-6); }
   .card h3 { margin: 0 0 var(--s-2); font-size: 24px; color: var(--accent); font-weight: var(--fw-medium); }
+  .card p, .card li { font-size: 23px; }
   ul { margin: 0; padding-left: var(--s-6); display: flex; flex-direction: column; gap: var(--s-2); }
-  img.shot { width: 100%; border-radius: var(--r-card); border: var(--line-w) solid var(--line); display: block; }
-  .crop { overflow: hidden; border-radius: var(--r-card); border: var(--line-w) solid var(--line); }
-  .crop img { width: 100%; display: block; }
-  .num { font-size: 64px; font-weight: var(--fw-bold); color: var(--ok); line-height: 1; }
-  .stat { display: flex; flex-direction: column; gap: var(--s-2); }
+  .num { font-size: 56px; font-weight: var(--fw-bold); color: var(--ok); line-height: 1; }
   .flow { display: flex; align-items: stretch; gap: var(--s-3); }
-  .flow .box { flex: 1; background: var(--surface); border: var(--line-w) solid var(--line); border-radius: var(--r-card); padding: var(--s-4); font-size: 20px; line-height: 1.4; }
+  .flow .box { flex: 1; background: var(--surface); border: var(--line-w) solid var(--line); border-radius: var(--r-card); padding: var(--s-5) var(--s-4); display: flex; flex-direction: column; gap: var(--s-2); }
+  .flow .box b { font-size: 24px; }
+  .flow .box span { font-size: 17px; line-height: 1.45; }
   .flow .arrow { align-self: center; color: var(--text-dim); font-size: 28px; }
-  .pn { position: absolute; right: var(--s-8); bottom: var(--s-5); color: var(--text-dim); font-size: 16px; }
+  .pn { position: absolute; right: var(--s-8); bottom: var(--s-5); color: var(--text-dim); font-size: 16px; font-family: var(--font-mono); }
+
+  /* 시연 장: 캡처를 크게 */
+  .demo { padding: var(--s-10) var(--s-12) var(--s-8); gap: var(--s-5); }
+  .demo h2 { font-size: 34px; }
+  .demo-row { display: flex; gap: var(--s-8); flex: 1; min-height: 0; align-items: flex-start; }
+  .demo-row img.big { height: 560px; width: auto; border-radius: var(--r-card); border: var(--line-w) solid var(--line); display: block; }
+  .demo-side { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--s-4); padding-top: var(--s-2); }
+  .demo-side p { font-size: 21px; }
+  .pair { display: flex; gap: var(--s-6); flex: 1; min-height: 0; }
+  .pair figure { flex: 1; min-width: 0; margin: 0; display: flex; flex-direction: column; gap: var(--s-3); }
+  .pair img { width: 100%; height: auto; border-radius: var(--r-card); border: var(--line-w) solid var(--line); display: block; }
+  .pair figcaption { font-size: 20px; line-height: 1.45; color: var(--text-dim); }
+
+  /* 실측 막대 */
+  .bars { display: flex; flex-direction: column; gap: var(--s-4); }
+  .bar-row { display: grid; grid-template-columns: 210px 1fr 90px; align-items: center; gap: var(--s-3); font-size: 19px; }
+  .bar-track { height: 26px; background: var(--surface-2); border-radius: var(--r-control); overflow: hidden; }
+  .bar { height: 100%; background: var(--accent); border-radius: var(--r-control); }
+  .bar.ok { background: var(--ok); }
+  .bar.sum { background: var(--line-strong); }
+  .stats { display: flex; gap: var(--s-6); }
+  .stats .card { flex: 1; padding: var(--s-5); display: flex; flex-direction: column; gap: var(--s-2); }
+  .stats .card p { font-size: 19px; line-height: 1.4; }
+  .slide > .cols + .dim, .slide > .cols + .src { margin-top: auto; }
+  .src { font-size: 16px; }
 </style>
 </head>
 <body>
 
-<section class="slide" style="justify-content:center">
-  <p class="mono accent">SkillPick</p>
-  <h1>디자인 스킬 여러 개를<br>URL 하나로 동시에 돌려 보고 고르세요</h1>
-  <p class="dim">자기 서비스를 직접 만드는 개발자와 1인 창업자를 위한 데스크톱 앱</p>
-  <p class="dim">태지로 · 박태영 · 1인 개발</p>
+<!-- 1 표지 -->
+<section class="slide" style="justify-content:center; gap: var(--s-8)">
+  <p class="kicker">SkillPick</p>
+  <h1>URL 하나에 디자인 스킬 여러 개를<br>동시에 돌려 나란히 보고 고르는 데스크톱 앱</h1>
+  <p class="dim">자기 서비스를 직접 만드는 개발자와 1인 창업자를 위해</p>
+  <p class="dim">팀 태지로 · 박태영</p>
 </section>
 
+<!-- 2 문제 -->
 <section class="slide">
-  <h2>홈페이지 디자인은 매번 고민이고, 스킬은 너무 많습니다</h2>
+  <p class="kicker">문제</p>
+  <h2>디자인 스킬은 많은데 비교할 방법이 없음</h2>
   <div class="cols">
-    <div class="card col"><h3>대상</h3><p>자기 서비스를 직접 만드는 개발자, 1인 창업자</p></div>
-    <div class="card col"><h3>불편</h3><ul><li>어떤 디자인 스킬을 쓸지 고르지 못함</li><li>하나씩 돌리면 시간이 쌓임</li><li>시안이 가격이나 버튼을 빼먹어도 눈으로 찾아야 함</li></ul></div>
-    <div class="card col"><h3>기존 방식</h3><p>스킬 하나로 시키고, 별로면 다른 스킬로 다시 시킴. 나란히 비교할 수 없음</p></div>
+    <div class="card col"><h3>고르지 못함</h3><p>디자인 스킬이 너무 많아 어떤 것을 써야 할지 모름</p></div>
+    <div class="card col"><h3>시간이 쌓임</h3><p>스킬 하나로 시키고, 별로면 다른 스킬로 다시 시킴. 하나씩 돌려 비교하면 기다리는 시간이 더해짐</p></div>
+    <div class="card col"><h3>눈으로 찾아야 함</h3><p>시안이 원본의 문구, 가격, 버튼, 링크를 빠뜨려도 하나하나 눈으로 대조해야 알 수 있음</p></div>
   </div>
-  <p class="dim">이 불편이 얼마나 흔한지 보여 주는 설문은 아직 없고, 지금 근거는 작성자 본인의 경험입니다</p>
+  <p class="dim" style="font-size:20px">지금 근거는 만든 사람 본인의 경험이고, 얼마나 흔한 불편인지 조사한 설문은 아직 없음</p>
+  <span class="pn">2</span>
 </section>
 
+<!-- 3 해결 -->
 <section class="slide">
-  <h2>URL 하나, 스킬 여러 개, 같은 기준으로 비교</h2>
-  <div class="cols">
-    <div class="col">
-      <ul>
-        <li>원본에서 제목·버튼·가격·링크를 읽어 <b>지켜야 할 것</b>을 뽑음</li>
-        <li>스킬마다 Kiro CLI가 동시에 시안을 만듦</li>
-        <li>시안이 지켜야 할 것을 담았는지 <b>코드가 검사</b>함</li>
-        <li>실제로 그려진 시안을 나란히 보고 고름</li>
-      </ul>
-    </div>
-    <div class="col"><img class="shot" src="../screens/03-confirm.png" alt="원본 확인 화면"></div>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>데모: 생성 중과 비교 화면</h2>
-  <div class="cols">
-    <div class="col"><div class="crop"><img src="../screens/04-running.png" alt="생성 중 화면"></div><p class="dim">스킬 세 개가 같이 도는 모습</p></div>
-    <div class="col"><div class="crop"><img src="../screens/05-compare-desktop.png" alt="비교 화면"></div><p class="dim">2열 비교: 원본과 시안 4개(스타일 둘 포함), 모두 25/25</p></div>
-  </div>
-</section>
-
-<section class="slide">
-  <h2>구조: 판정은 코드, 생성만 Kiro CLI</h2>
+  <p class="kicker">해결</p>
+  <h2>같은 원본, 같은 기준으로 동시에 만들고 코드로 검사</h2>
   <div class="flow">
-    <div class="box">원본 수집<br><span class="dim mono">capture.js</span></div><span class="arrow">›</span>
-    <div class="box">지켜야 할 것<br><span class="dim mono">mustKeep.js</span></div><span class="arrow">›</span>
-    <div class="box">동시 실행 풀<br><span class="dim mono">engine.js</span></div><span class="arrow">›</span>
-    <div class="box">Kiro CLI × 스킬 수<br><span class="dim mono">designer 에이전트</span></div><span class="arrow">›</span>
-    <div class="box">검사<br><span class="dim mono">checker.js</span></div><span class="arrow">›</span>
-    <div class="box">비교 격자<br><span class="dim mono">compare.js</span></div>
+    <div class="box"><b>원본 수집</b><span class="dim">URL을 넣으면 페이지를 열어 글자와 화면을 모음</span></div><span class="arrow">›</span>
+    <div class="box"><b>지켜야 할 것</b><span class="dim">제목, 문구, 가격, 버튼, 링크를 뽑아 확인</span></div><span class="arrow">›</span>
+    <div class="box"><b>동시 실행</b><span class="dim">스킬마다 Kiro CLI 프로세스 하나. 기본 3개, 설정 1~6</span></div><span class="arrow">›</span>
+    <div class="box"><b>코드로 검사</b><span class="dim">시안이 지켜야 할 것을 담았는지 순수 함수가 판정</span></div><span class="arrow">›</span>
+    <div class="box"><b>비교</b><span class="dim">실제로 그려진 시안을 원본 옆에 나란히 놓고 고름</span></div>
   </div>
   <div class="cols">
-    <div class="card col"><h3>정답이 있는 계산은 코드로</h3><p>지켜야 할 것 선정과 통과 판정은 순수 함수와 단위 시험 172개로 고정</p></div>
-    <div class="card col"><h3>시안은 격리해서 표시</h3><p>별도 세션, Node 접근 없음, CSP 헤더 강제, 이동과 새 창 차단</p></div>
-    <div class="card col"><h3>정직한 진행 표시</h3><p>실제 프로세스 수와 시작·종료 시각만 표시. 가짜 진행률과 재생 없음</p></div>
+    <div class="card col"><h3>판정은 코드</h3><p>지켜야 할 것 선정과 통과 판정은 <span class="mono">src/core/</span> 순수 함수와 시험 172개로 고정</p></div>
+    <div class="card col"><h3>생성만 Kiro CLI</h3><p>시안마다 작업 폴더에 <span class="mono">designer</span> 에이전트와 steering, 수용 기준 문서를 만들어 실행</p></div>
   </div>
+  <span class="pn">3</span>
 </section>
 
-<section class="slide">
-  <h2>Kiro 활용</h2>
-  <div class="cols">
-    <div class="card col"><h3>Spec · Steering</h3><p>요구사항, 설계, 작업 목록과 제품·기술·보안 규칙을 <span class="mono">.kiro/</span>에 두고 Kiro가 따라 구현. 문서 작성은 Claude Code</p></div>
-    <div class="card col"><h3>Hooks</h3><p><span class="mono">src/core</span> 저장 시 <span class="mono">npm test</span> 실행</p></div>
-    <div class="card col"><h3>앱의 엔진</h3><p>Kiro CLI 비대화 모드와 커스텀 에이전트로 시안을 만듦. 스파이크로 동시 실행과 보안 한계를 직접 확인</p></div>
+<!-- 4 입력 -->
+<section class="slide demo">
+  <p class="kicker">시연 1 · 입력</p>
+  <h2>주소를 넣고 스킬을 고름</h2>
+  <div class="demo-row">
+    <img class="big" src="../screens/02-new.png" alt="입력 화면">
+    <div class="demo-side">
+      <p>주소를 넣고 Enter를 누르면 원본 수집이 바로 시작됨</p>
+      <p class="dim">기본 스킬 6개 중에서 고르고, 선택 요약은 하단 고정 바에 보임</p>
+    </div>
   </div>
+  <span class="pn">4</span>
 </section>
 
-<section class="slide">
-  <h2>실제로 잰 값과 한계</h2>
-  <div class="cols">
-    <div class="col">
-      <div class="stat"><span class="num">65초</span><p>스킬 3개 시안이 모두 끝나기까지 (한 사이트, 한 번 측정)</p></div>
-      <div class="stat"><span class="num">25/25</span><p>세 시안 모두 지켜야 할 것을 담음. 다시 고치기 0번</p></div>
-      <div class="stat"><span class="num">12ms</span><p>세 Kiro CLI 시작 시각 차이. 43.6초 동안 함께 실행</p></div>
-    </div>
-    <div class="card col"><h3>알려진 한계</h3>
-      <ul>
-        <li><span class="mono">--trust-tools</span>를 주면 작업 폴더 밖 파일 접근이 막히지 않음. 셸 실행은 막혀 있음</li>
-        <li>전역 steering과 스킬이 시안 생성에 섞일 수 있음</li>
-        <li>예비 엔진은 만들지 않음. 같이 스크롤은 실제 마우스 휠로는 확인하지 못함</li>
-      </ul>
+<!-- 5 확인 -->
+<section class="slide demo">
+  <p class="kicker">시연 2 · 확인</p>
+  <h2>지켜야 할 것을 먼저 보여 줌</h2>
+  <div class="demo-row">
+    <img class="big" src="../screens/03-confirm.png" alt="원본 확인 화면">
+    <div class="demo-side">
+      <p>원본에서 뽑은 문구, 가격, 버튼, 링크를 종류별로 접고 펼침</p>
+      <p class="dim">종류별·전체 선택과 해제가 있고, 링크는 글자와 경로를 같이 보임</p>
     </div>
   </div>
+  <span class="pn">5</span>
+</section>
+
+<!-- 6 생성 중 -->
+<section class="slide demo">
+  <p class="kicker">시연 3 · 생성 중</p>
+  <h2>세 스킬이 같이 돔</h2>
+  <div class="demo-row">
+    <img class="big" src="../screens/04-running.png" alt="생성 중 화면">
+    <div class="demo-side">
+      <p>스킬마다 Kiro CLI 프로세스가 하나씩 떠서 동시에 시안을 만듦</p>
+      <p class="dim">실제 프로세스 상태와 시작·종료 시각만 보임. 가짜 진행률 없음</p>
+    </div>
+  </div>
+  <span class="pn">6</span>
+</section>
+
+<!-- 7 비교 -->
+<section class="slide demo">
+  <p class="kicker">시연 4 · 비교</p>
+  <h2>원본이 첫 칸, 시안마다 통과 개수</h2>
+  <div class="pair">
+    <figure><img src="../screens/05-compare-desktop.png" alt="데스크톱 비교 화면"><figcaption>데스크톱 보기. 2열 고정, 원본이 첫 칸</figcaption></figure>
+    <figure><img src="../screens/05b-compare-mobile.png" alt="모바일 비교 화면"><figcaption>모바일 보기. 카드 안 390폭 틀로 같은 시안을 봄</figcaption></figure>
+  </div>
+  <span class="pn">7</span>
+</section>
+
+<!-- 8 크게 보기와 고르기 -->
+<section class="slide demo">
+  <p class="kicker">시연 5 · 크게 보기와 고르기</p>
+  <h2>자세히 보고 하나를 고름</h2>
+  <div class="pair">
+    <figure><img src="../screens/06b-side.png" alt="크게 보기 화면"><figcaption>크게 보기. 시안 하나를 넓게 보고 검사 결과를 같이 봄</figcaption></figure>
+    <figure><img src="../screens/07-picked.png" alt="고른 뒤 화면"><figcaption>고른 뒤. HTML 저장이나 내 프로젝트에 내보내기</figcaption></figure>
+  </div>
+  <span class="pn">8</span>
+</section>
+
+<!-- 9 실측 -->
+<section class="slide" style="gap: var(--s-5)">
+  <p class="kicker">실측 · 2026-11-14 · kirothon.ausg.me</p>
+  <h2>세 개가 61.6초 동안 같이 돌았음</h2>
+  <div class="bars">
+    <div class="bar-row"><span class="mono">k-style-ui-ux</span><div class="bar-track"><div class="bar" style="width:26.2%"></div></div><span>61.6초</span></div>
+    <div class="bar-row"><span class="mono">ui-ux-pro-max</span><div class="bar-track"><div class="bar" style="width:32.9%"></div></div><span>77.4초</span></div>
+    <div class="bar-row"><span class="mono">frontend-design</span><div class="bar-track"><div class="bar" style="width:40.9%"></div></div><span>96.1초</span></div>
+    <div class="bar-row"><span>시작~마지막 검사</span><div class="bar-track"><div class="bar ok" style="width:46.1%"></div></div><span class="ok">108.4초</span></div>
+    <div class="bar-row"><span class="dim">하나씩이라면</span><div class="bar-track"><div class="bar sum" style="width:100%"></div></div><span class="dim">235.1초</span></div>
+  </div>
+  <div class="stats">
+    <div class="card"><span class="num">9ms</span><p>세 Kiro CLI 프로세스가 시작한 시각 차이</p></div>
+    <div class="card"><span class="num">24/24</span><p>세 시안 모두 지켜야 할 것 24개 전부 통과</p></div>
+    <div class="card"><span class="num">0</span><p>세 시안의 외부 스크립트와 지어낸 숫자</p></div>
+  </div>
+  <p class="dim src">막대는 Kiro CLI 실행 시간. 235.1초는 세 시간의 합으로, 직접 순차 실행해 잰 값은 아님. 출처는 앱이 남긴 timeline.log, 한 사이트 한 번 측정</p>
+  <span class="pn">9</span>
+</section>
+
+<!-- 10 신뢰 -->
+<section class="slide">
+  <p class="kicker">차별점</p>
+  <h2>통과 표시를 믿을 수 있게</h2>
+  <div class="cols">
+    <div class="card col"><h3>판정은 AI가 아니라 코드</h3><p>통과 여부는 <span class="mono">src/core/checker.js</span>가 정함. 가격 표기 차이(9,900원과 9900원)는 통과, 외부 <span class="mono">&lt;script src&gt;</span>는 실패로 시험에 고정</p></div>
+    <div class="card col"><h3>미리 만든 결과 재생 없음</h3><p>매번 실제로 Kiro CLI를 돌리고, 하나씩 도는데 동시인 척하는 표시를 반목표로 둠</p></div>
+    <div class="card col"><h3>시안은 격리해서 표시</h3><p>별도 세션의 webview, Node 접근 없음, 응답 헤더 CSP 강제, 이동과 새 창 차단. 원본 글자는 데이터로만 다룸</p></div>
+  </div>
+  <span class="pn">10</span>
+</section>
+
+<!-- 11 Kiro 활용 -->
+<section class="slide" style="gap: var(--s-5)">
+  <p class="kicker">Kiro 활용</p>
+  <h2>Spec으로 만들고, 앱 엔진도 Kiro CLI</h2>
+  <div class="cols">
+    <div class="card col"><h3>Spec</h3><p>요구사항 8개, 수용 기준 36개, 구현 작업 17개 모두 완료. Kiro CLI가 <span class="mono">tasks.md</span>를 위에서부터 따라 구현</p></div>
+    <div class="card col"><h3>Steering 3개 · 훅 1개</h3><p><span class="mono">product</span>, <span class="mono">tech</span>, <span class="mono">security</span> 규칙. <span class="mono">src/core</span> 저장 시 <span class="mono">npm test</span>를 도는 훅</p></div>
+    <div class="card col"><h3>앱 엔진</h3><p>시안마다 <span class="mono">designer</span> 커스텀 에이전트를 비대화 모드로 실행. 스킬은 steering, 지켜야 할 것은 수용 기준 문서로 전달</p></div>
+  </div>
+  <div class="stats">
+    <div class="card"><span class="num" style="font-size:44px">172</span><p>시험 통과, 실패 0</p></div>
+    <div class="card"><span class="num" style="font-size:44px">19</span><p>커밋 (11:14~16:35)</p></div>
+    <div class="card"><span class="num" style="font-size:44px">4,746</span><p>소스 줄 수, 파일 44개</p></div>
+    <div class="card"><span class="num" style="font-size:44px">2</span><p>의존성 <span class="mono">electron</span>, <span class="mono">linkedom</span></p></div>
+  </div>
+  <p class="dim src">기획과 문서 작성은 Claude Code, 앱 구현은 Kiro CLI. 숫자 출처는 BUILD_REPORT.md</p>
+  <span class="pn">11</span>
+</section>
+
+<!-- 12 한계와 다음 -->
+<section class="slide">
+  <p class="kicker">한계와 다음</p>
+  <h2>확인한 한계를 그대로 적음</h2>
+  <div class="cols">
+    <div class="card col"><h3>폴더 밖 접근은 막지 못함</h3><p><span class="mono" style="white-space:nowrap;font-size:19px">--trust-tools</span>를 주면 작업 폴더 밖 파일도 읽고 쓸 수 있음(3.1.0, 3.3.0 확인). 셸 실행은 막혀 있음</p></div>
+    <div class="card col"><h3>전역 설정이 섞일 수 있음</h3><p>사용자 전역 steering과 스킬이 시안 생성에 같이 들어오고, 끌 방법을 찾지 못함</p></div>
+    <div class="card col"><h3>스타일 고르기는 한 스킬만</h3><p>스타일 목록을 읽을 수 있는 것은 <span class="mono" style="white-space:nowrap">ui-ux-pro-max</span>뿐. 예비 엔진은 만들지 않음</p></div>
+  </div>
+  <p class="dim" style="font-size:20px">다음: 폴더 범위를 강제로 막는 방법 찾기, 실제 Kiro CLI로 다시 고치기 관찰, 여러 사이트에서 다시 측정</p>
+  <span class="pn">12</span>
 </section>
 
 </body>
