@@ -68,7 +68,7 @@ function render() {
     h('div', { class: 'row between' }, h('h1', null, '설정'), h('button', { class: 'btn', type: 'button', onclick: () => go(state.run ? 'compare' : 'newRun') }, '닫기')),
     h('div', { class: 'panel' },
       field('동시 실행 수', '한 번에 돌리는 Kiro CLI 수예요. 1에서 6까지', concurrency),
-      field('시안당 시간 제한', '넘기면 그 시안만 끝내요. 분 단위', minutes),
+      field('시안당 시간 제한', '넘기면 그 시안만 끝내요 (분 단위)', minutes),
       field('빠진 항목 다시 고치기', '지켜야 할 것이 빠지면 한 번 더 고치게 해요', retry),
       field('엔진', null, h('span', { class: 'mono' }, state.engineName))),
     h('div', { class: 'panel' },

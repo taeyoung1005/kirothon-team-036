@@ -26,7 +26,7 @@ function createWindow() {
     minHeight: 760,
     backgroundColor: '#0e0f11',
     titleBarStyle: 'hiddenInset',
-    trafficLightPosition: { x: 20, y: 18 },
+    trafficLightPosition: { x: 20, y: 18 }, // x는 renderer/styles/tokens.css의 --traffic-x와 같아야 한다
     title: 'SkillPick',
     webPreferences: {
       preload: path.join(here, 'preload.cjs'),

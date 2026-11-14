@@ -1,4 +1,6 @@
-import { h, displayHref, formatDurationKo, toast } from '../lib/dom.js';
+import { h, displayHref, formatDurationKo } from '../lib/dom.js';
+import { pickedPanel } from '../lib/picked.js';
+import { cardTitle } from '../../src/core/compareView.js';
 import { go, registerScreen, state } from '../app.js';
 import { warningTags } from './compare.js';
 
@@ -6,7 +8,6 @@ const PARTITION = 'skillpick-variants';
 const KIND_LABEL = { h1: '제목', h2: '소제목', hero: '첫 단락', button: '버튼', price: '가격', nav: '내비' };
 
 const hostOf = (url) => { try { return new URL(url).host.replace(/^www\./, ''); } catch { return url; } };
-const sourceShort = (url) => String(url ?? '').replace(/^https?:\/\//, '');
 
 function itemLabel(item) {
   return item.href ? `${item.text} → ${displayHref(item.href)}` : item.text;
@@ -49,35 +50,6 @@ function checkPanel(run, v, onSideBySide, sideOn) {
       v.skill.source ? h('button', { class: 'link-btn', type: 'button', onclick: () => window.skillpick.openExternal(v.skill.source) }, '↗ 출처') : null),
     elapsed ? h('p', { class: 'row-line dim' }, `걸린 시간 ${formatDurationKo(elapsed)}`) : null,
     h('button', { class: `btn block ${sideOn ? 'on' : ''}`, type: 'button', onclick: onSideBySide }, sideOn ? '시안만 보기' : '원본과 나란히'));
-}
-
-function pickedPanel(run, v, close) {
-  const api = window.skillpick;
-  const hasHtml = v.status === 'done';
-  const tip = (r, okText) => {
-    if (!r || r.canceled) return;
-    if (r.ok === false) toast(`저장하지 못했어요 · ${r.message}`);
-    else toast(`${okText} · ${r.path}`);
-  };
-  const step = (n, title, ...body) => h('section', { class: 'pick-step' }, h('span', { class: 'num' }, n), h('div', { class: 'pick-body' }, h('h3', null, title), ...body));
-  return h('aside', { class: 'picked-panel', 'aria-label': `${v.skill.name} 가져가기` },
-    h('div', { class: 'row between' },
-      h('h2', null, `${v.skill.name} 을 골랐어요`),
-      h('button', { class: 'icon-btn', type: 'button', 'aria-label': '닫기', onclick: close }, '✕')),
-    step('1', '스킬 설치',
-      h('div', { class: 'row-line' }, h('span', { class: 'dim' }, '출처'), h('span', { class: 'mono ellipsis', title: v.skill.source }, sourceShort(v.skill.source)),
-        h('button', { class: 'btn', type: 'button', onclick: () => { api.copyText(v.skill.source); toast('출처를 복사했어요'); } }, '복사')),
-      h('div', { class: 'row-line' }, h('span', { class: 'dim' }, 'Kiro'), h('span', null, '.kiro/steering 에 넣기'),
-        h('button', { class: 'btn', type: 'button', onclick: async () => tip(await api.exportSteering(run.id, v.skillId), '저장했어요') }, '내 프로젝트에 내보내기')),
-      v.skill.installCmd
-        ? h('div', { class: 'row-line' }, h('span', { class: 'dim' }, '기타'), h('span', null, '설치 명령'),
-          h('button', { class: 'btn', type: 'button', onclick: () => { api.copyText(v.skill.installCmd); toast('설치 명령을 복사했어요'); } }, '설치 명령 복사'))
-        : null),
-    step('2', '시안 코드',
-      h('div', { class: 'row-line' }, h('span', { class: 'mono' }, 'index.html'),
-        h('button', { class: 'btn', type: 'button', disabled: !hasHtml, onclick: async () => tip(await api.saveHtml(run.id, v.skillId), '저장했어요') }, 'HTML 저장'),
-        h('button', { class: 'btn', type: 'button', disabled: !hasHtml, onclick: () => api.openFolder(run.id, v.skillId) }, '폴더 열기'))),
-    step('3', '이 비교 기록', h('p', { class: 'dim row-line' }, '최근 비교에 저장돼요')));
 }
 
 function render(params) {
@@ -141,10 +113,11 @@ function render(params) {
   }, '이 스킬로 고르기');
 
   const warn = warningTags(v);
+  const title = cardTitle(v.skill);
   const root = h('div', { class: 'detail' },
     h('div', { class: 'detail-bar' },
       h('button', { class: 'btn', type: 'button', onclick: () => go('compare') }, '← 비교로'),
-      h('span', { class: 'mono detail-name' }, v.skill.name),
+      h('span', { class: 'detail-titles' }, h('span', { class: 'mono detail-name' }, title.main), title.sub ? h('span', { class: 'dim detail-sub' }, title.sub) : null),
       v.check ? h('span', { class: `badge ${v.check.passed ? 'ok' : 'warn'}` }, `${v.check.passed ? '✓' : '⚠'} ${v.check.ok}/${v.check.total}`) : null,
       ...warn.map((t) => h('span', { class: 'badge warn' }, t)),
       h('span', { class: 'dim' }, hostOf(run.url)),

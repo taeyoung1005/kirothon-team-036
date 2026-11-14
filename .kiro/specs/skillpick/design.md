@@ -28,6 +28,9 @@ src/core/styles.js        parseCsv, stylesFromCsv(text, spec), expandUnits(skill
 src/core/skills.js        DEFAULT_SKILLS, parseSkillMd(text, source) → Skill, toRawUrl(url), skillIdFrom(name, source)
 src/core/prompt.js        buildPrompt(skill), buildRetryPrompt(missing)
 src/core/status.js        상태 enum과 전이 함수 nextStatus(cur, event)
+src/core/compareView.js   cardTitle, fitView, sortVariants, isPassedVariant, scrollRatio, scrollTarget, scrollMessage, parseScrollMessage, sidebarGroup  (비교 화면 계산)
+src/core/confirmView.js   countAssets, assetSummaryParts, linkLabel, collapsedByDefault, setAllEnabled, selectionSummary  (입력·확인 화면 계산)
+src/core/shotPrep.js      isSkipLink, flattenedPosition, shiftFor, nextScrollStep, applyShotPrep  (전체 캡처 준비. 페이지 안에 주입해서도 쓰는 자기 완결 파일)
 src/main/preflight.js     checkKiro() → Preflight
 src/main/capture.js       captureUrl(url, outDir) → {content, shots}
 src/main/skillFetch.js    fetchSkill(sourceUrl) → Skill (캐시 포함)
@@ -35,13 +38,14 @@ src/main/workspace.js     createWorkspace(runId, skill, skillBody, items, conten
 src/main/engine.js        runEngine(workDir, prompt, opts) → Promise<EngineResult>; createPool(limit)
 src/main/renderCheck.js   renderCheck({runId, skillId, workDir}) → {consoleErrors, shots}
 src/main/variantProtocol.js  시안·캡처를 서빙하는 전용 프로토콜(CSP 헤더 강제)
-src/main/paths.js, shoot.js  앱 데이터 경로, 전체 페이지 캡처 공용 함수
+src/main/paths.js, shoot.js  앱 데이터 경로, 전체 페이지 캡처 공용 함수(캡처 준비는 아래 "원본 캡처")
 src/main/runner.js        createRunner(deps) → {startRun(input, emit), stopRun(runId), stopAll()}  (Electron 의존 기능은 deps로 주입)
 src/main/runStore.js      saveRun, loadRun, listRuns, clearRuns
 src/main/settings.js      getSettings, setSettings
 src/templates/designer-agent.json
 renderer/index.html  renderer/app.js  renderer/styles/tokens.css  renderer/styles/app.css
-renderer/screens/{setup,newRun,confirm,running,compare,detail,picked,settings}.js
+renderer/screens/{setup,newRun,confirm,running,compare,detail,settings}.js
+renderer/lib/{dom,live,session,picked}.js   picked.js는 화면 7 패널(pickedPanel). 비교 카드와 크게 보기가 같이 쓴다
 tests/*.test.js  tests/fixtures/*.html
 ```
 
@@ -91,6 +95,56 @@ tests/*.test.js  tests/fixtures/*.html
 - 히어로 첫 단락: 첫 `h1` 다음에 오는 첫 `<p>`(20자 이상).
 - href 비교: 절대 URL로 바꾼 뒤 origin+pathname만 비교(끝 `/` 무시).
 - 외부 스크립트 허용 목록: 없음. `<script src>`는 전부 실패. 폰트는 `<link>`로만 허용.
+
+## 화면 계산과 상태
+
+화면 코드에서 뺀 계산은 `src/core/`의 순수 함수이고 `tests/compareView.test.js`, `tests/confirmView.test.js`로 고정한다. 화면 문구는 `docs/superpowers/specs/2026-11-14-skillpick-ui.md`가 정본이다.
+
+**비교 화면 (`compareView.js`)**
+- `cardTitle(skill)` → `{main, sub}`. `main`은 `skill.baseId ?? skill.name`(스킬 id), `sub`는 `skill.style?.name`(없으면 빈 글자). 카드 머리와 크게 보기 상단이 두 줄로 쓴다.
+- `fitView(mode, holderW, holderH)` → `{scale, width, height, left} | null`. 너비는 데스크톱 1440, 모바일 390. `scale = min(1, holderW / width)`, `height = holderH / scale`, 모바일은 `left`로 가운데에 둔다. 폭이나 높이가 0이면 `null`.
+- `sortVariants(variants, mode)`: `finish`(기본)는 끝난 시각 순에 미완료를 뒤로, `name`은 스킬 이름 순. 같으면 들어온 순서.
+- `isPassedVariant(v)`: `status === 'done'`이고 `check.passed === true`. `통과한 것만` 필터가 쓴다.
+- `scrollRatio(top, max)`는 0~1로 맞추고 넘칠 길이(`max`)가 없으면 0. `scrollTarget(ratio, max)`는 그 비율을 다른 카드의 스크롤 길이에 적용한 위치(반올림).
+- `scrollMessage(ratio)` / `parseScrollMessage(text)`: 같이 스크롤에서 시안이 호스트로 보내는 글자 `__sp_scroll:<0~1>`을 만들고 읽는다. 읽을 때는 `^__sp_scroll:(\d+(\.\d+)?)$` 꼴만 받고 0~1 밖이거나 다른 글자면 `null`.
+- `sidebarGroup(screen)`: `compare`와 `detail`은 `'compare'`, 나머지는 `'other'`.
+- 시안 카드는 화면 안에서 정렬과 필터를 CSS `order`·`display`로 하고 DOM을 옮기지 않는다. 옮기면 `<webview>`가 다시 불러와진다.
+
+**입력·확인 화면 (`confirmView.js`)**
+- `countAssets(assets)` → `{image, logo, icon, svg, video}`. 에셋 하나는 한 종류에만 센다. 판정 순서는 SVG(`kind: svg`), 로고(`role: logo` 또는 `partner-logo`), 아이콘(`role: icon`), 영상(`kind: video`), 나머지는 전부 이미지(배경, 영상 포스터, 공유 이미지 포함). 배열이 아니거나 객체가 아닌 값은 0으로 센다.
+- `assetSummaryParts(counts)`: 0이 아닌 종류만 이미지, 로고, 아이콘, SVG, 영상 순으로 `{key, label, n}`.
+- `linkLabel(href, base)`: 화면에 보일 링크. 같은 origin이면 경로, 다른 사이트면 `origin + 경로`, 쿼리는 `?…`, 해시는 이름만 있으면(`#about`) 그대로 두고 값이 실린 것(`#access_token=…`)은 `#…`. 주소가 아니거나 http·https가 아니면 쿼리만 줄여 그대로. 표시에만 쓰고 검사는 원래 href로 한다.
+- `collapsedByDefault(count)`: 항목이 7개 이상(`COLLAPSE_OVER = 6` 초과)인 종류만 처음부터 접는다.
+- `setAllEnabled(items, enabled, kind?)`: `kind`를 주면 그 종류만 켜고 끈다.
+- `selectionSummary({skills, units, concurrency, max})` → `{text, error}`. `text`는 `n개 선택 · 시안 n개 · 동시 n개`. 선택이 0개면 `error`는 `스킬을 하나 이상 골라 주세요`, 시안이 `max`(`MAX_UNITS` 12)를 넘으면 `시안은 한 번에 12개까지예요`. 오류가 있으면 `원본 확인 →`을 끈다.
+
+**렌더러 상태 (`renderer/app.js`의 `state`)**
+- `sidebarCollapsed: { compare: true, other: false }`. `sidebarGroup(state.screen)`으로 묶음을 고르고 `toggleSidebar()`가 바꾼다. 비교와 크게 보기는 한 묶음이라 한쪽에서 펴면 다른 쪽에서도 펴져 있다. `toggleSidebar()`는 `.main`에 `side-collapsed` 클래스만 바꾸고 화면을 다시 그리지 않는다.
+- `viewMode`(`desktop`|`mobile`)는 비교와 크게 보기가 같이 쓴다.
+- 툴바 왼쪽 여백은 `tokens.css`의 `--traffic-x`, `--traffic-w`, `--traffic-gap`으로 정한다(20 + 64 + 16 = 100px). `--traffic-x`는 `electron/main.js`의 `trafficLightPosition.x`와 같아야 한다.
+- 비교 카드 크기는 `tokens.css`에서만 정한다: `--grid-cols: 2`, `--card-h: max(420px, 60vh)`, `--mobile-w: 390px`(`compareView.js`의 `MOBILE_W`와 같다). 스킬 카드 최소 폭은 `--skill-min-w: 260px`.
+
+## 원본 캡처
+
+`shoot(wc, width, file)`는 숨은 창을 데스크톱 1440폭과 모바일 390폭으로 한 번씩 전체 캡처한다. 원본 수집(`capture.js`)과 시안 렌더 확인(`renderCheck.js`)이 같이 쓴다. 지연 로딩과 reveal(스크롤하면 나타나는 요소)이 끝나야 원본의 모습이 그대로 찍히므로 찍기 전에 준비를 한다.
+
+1. 끝까지 천천히 스크롤했다가 맨 위로 돌아온다. 한 걸음은 화면 높이의 절반(최소 200px), 걸음마다 200ms 쉰다(`nextScrollStep`). 바닥에 닿거나 y가 10000px(`MAX_SHOT_HEIGHT`)에 닿거나 8초가 지나면 멈춘다. 맨 위로 돌아온 뒤 보이는 이미지와 끝이 있는 애니메이션이 끝나길 최대 2.5초 기다린다. 끝없이 도는 애니메이션은 기다리지 않는다. `scroll-behavior: smooth`가 있어도 `behavior: 'instant'`로 이동한다.
+2. 캡처 동안만 `position: fixed`를 `absolute`로, `sticky`를 `static`으로 바꾼다(`flattenedPosition`). `absolute`로 바꿔 자리가 0.5px 넘게 달라지면 `translate`로 되돌린다(`shiftFor`). 건너뛰기 링크(글자가 `건너뛰기`, `본문으로`, `skip to …` 꼴이고 fixed·absolute이거나 화면 밖이거나 1px로 줄어 있는 `<a>`)는 `visibility: hidden`으로 숨긴다(`isSkipLink`). 바꾼 요소의 인라인 `style`은 캡처 뒤에 원래대로 되돌린다. 캡처가 실패해도 되돌린다. 같은 소스(`shotPrep.js`)를 페이지 안에 주입해서 돌리고, 시험에서는 linkedom 문서와 가짜 훅으로 돌린다.
+3. 결과: `shoot`은 `{file, width, height, truncated, prep}`를 돌려주고 `capture`와 `renderCheck`의 `shots.desktop`, `shots.mobile`에 그대로 담긴다. `prep`은 `{scroll, flattened, hiddenSkipLinks, warnings}`다. `scroll`은 `{steps, reachedEnd, scrollMs, settleMs, pendingImages, runningAnimations, scrollHeight}`(걸음 수, 스크롤과 기다림에 걸린 ms 등. 스크롤 단계가 실패하면 `null`), `flattened`는 바꾼 요소 수, `hiddenSkipLinks`는 숨긴 링크 수다.
+4. 준비 단계가 실패해도 캡처는 계속한다. 대신 실패는 `prep.warnings`와 콘솔 로그(`[shoot] …`)에 남긴다. 페이지가 응답하지 않을 때를 위한 상한은 스크롤 단계 13.5초, 고정 요소 정리와 되돌리기 각 5초.
+
+한계
+- 스크롤하는 동안에만 보이고 맨 위로 돌아오면 다시 사라지는 reveal은 되돌리지 못할 수 있다. 그 구간은 원본과 다르게 찍힌다.
+- 페이지 높이가 10000px을 넘으면 그 아래는 잘린다(`truncated: true`).
+
+## 보안 경계
+
+시안 뷰(`<webview>`)는 시안이 만든 코드를 실행하므로 앱 창과 분리한다. 전체 규칙은 `.kiro/steering/security.md`.
+- 별도 세션 파티션 `skillpick-variants`(저장되지 않음), Node 접근 없음(`preload` 제거, `nodeIntegration` 끔, `contextIsolation`·`sandbox` 켬), 전용 프로토콜 `skillpick-variant://`만 허용, 이동(`will-navigate`)과 새 창 차단, CSP 헤더 강제(`script-src 'unsafe-inline'; connect-src 'none'; img-src https: data:; font-src https: data:` 등). 같이 스크롤을 넣으면서 이 설정은 바꾸지 않았다.
+- 같이 스크롤은 새 통신 경로를 둘 만들었다. 둘 다 `preload`나 새 IPC 없이 `<webview>`의 기본 기능만 쓴다.
+  - 시안 → 호스트: 시안 안에 넣은 코드가 스크롤 비율을 콘솔 글자 `__sp_scroll:<0~1>` 한 가지로만 내보낸다. 호스트는 `console-message`로 받아 `parseScrollMessage`가 숫자 형식만 읽고 0~1 밖이나 다른 글자는 버린다. 시안이 같은 글자를 위조해도 다른 카드의 스크롤 위치만 바뀐다.
+  - 호스트 → 시안: `executeJavaScript`로 고정된 코드에 숫자 하나(`Number(ratio)`)만 끼워 넣어 보낸다. 시안이 보낸 글자는 코드에 넣지 않는다.
+- 같이 스크롤을 끄면 시안에 넣었던 스크롤 감시 코드를 지우는 코드를 실행한다.
 
 ## Kiro 연동
 
@@ -151,5 +205,6 @@ tests/*.test.js  tests/fixtures/*.html
 ## 시험 전략
 
 - `tests/extract.test.js`, `mustKeep.test.js`, `checker.test.js`, `status.test.js`, `prompt.test.js`: 고정 HTML(`tests/fixtures/`)과 리터럴 기댓값.
+- `tests/compareView.test.js`(카드 이름, 크기 맞추기, 정렬, 통과 판정, 스크롤 비율과 메시지, 사이드바 묶음), `tests/confirmView.test.js`(에셋 세기, 링크 표시, 접기 기준, 일괄 켜기·끄기, 요약 바), `tests/shotPrep.test.js`(position 바꾸기, 건너뛰기 링크 판정, 스크롤 걸음, 인라인 style 원복): 리터럴 기댓값.
 - `tests/engine.test.js`: `kiro-cli` 대신 가짜 명령(`node tests/fixtures/fake-kiro.js`)으로 동시 실행 한도·시간 초과·멈추기 확인. 엔진은 명령을 설정에서 받는다(`KIRO_CMD`).
 - 실제 확인: 앱에서 실제 사이트에 스킬 3개를 돌려 비교 화면까지.

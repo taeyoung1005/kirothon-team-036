@@ -1,24 +1,29 @@
 /* 색·글꼴·간격·크기는 이 파일에서만 정의한다. 다른 CSS는 var()로만 쓴다. */
 :root {
+  color-scheme: dark;   /* 스크롤바·기본 입력 부품도 어둡게 */
   /* 색 */
-  --bg: #0e0f11;
-  --surface: #16181b;
-  --surface-2: #1e2125;
-  --line: #2a2e33;
-  --text: #ecedee;
-  --text-dim: #9ba1a6;
-  --accent: #7c8cff;
-  --accent-text: #0e0f11;
-  --ok: #3dd68c;
-  --warn: #f5a524;
-  --bad: #f26d6d;
-  --accent-soft: rgba(124, 140, 255, 0.16);
-  --ok-soft: rgba(61, 214, 140, 0.14);
-  --warn-soft: rgba(245, 165, 36, 0.14);
-  --bad-soft: rgba(242, 109, 109, 0.14);
+  --bg: #0d0e12;
+  --surface: #15171c;
+  --surface-2: #1d2027;
+  --line: #2c303a;
+  --line-strong: #6b7282;      /* 입력칸·체크박스 경계. 바탕 대비 3:1 이상 */
+  --text: #eef0f4;
+  --text-dim: #a3a9b6;
+  --accent: #8b93ff;
+  --accent-hover: #a3a9ff;
+  --focus-ring: #a3a9ff;
+  --accent-text: #0d0e12;
+  --ok: #46dc95;
+  --warn: #f7b034;
+  --bad: #ff7b7b;
+  --accent-soft: rgba(139, 147, 255, 0.16);
+  --ok-soft: rgba(70, 220, 149, 0.14);
+  --warn-soft: rgba(247, 176, 52, 0.14);
+  --bad-soft: rgba(255, 123, 123, 0.14);
   --overlay: rgba(0, 0, 0, 0.56);
   --paper: #ffffff;
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+  --shadow: 0 12px 40px rgba(0, 0, 0, 0.55);   /* 떠 있는 것: 대화상자, 알림, 고른 뒤 패널 */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.24); /* 놓여 있는 카드 */
 
   /* 글꼴 */
   --font-ui: Pretendard, "Pretendard Variable", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
@@ -32,6 +37,9 @@
   --fw-regular: 400;
   --fw-medium: 500;
   --fw-bold: 700;
+  --lh-tight: 1.3;
+  --lh-base: 1.55;
+  --ls-title: -0.01em;
 
   /* 간격 (4의 배수) */
   --s-1: 4px;
@@ -47,8 +55,8 @@
   --s-20: 80px;
 
   /* 모서리 */
-  --r-card: 12px;
-  --r-control: 8px;
+  --r-card: 14px;
+  --r-control: 10px;
   --r-pill: 999px;
 
   /* 크기 */
@@ -61,10 +69,33 @@
   --focus-w: 2px;
   --dot: 8px;
   --dur: 180ms;
-  --card-min-w: 260px;
-  --card-min-w-mobile: 190px;
-  --card-body-h: 460px;
-  --card-body-h-mobile: 640px;
+  --dur-pulse: 1.2s;
+  --dur-spin: 0.9s;
+  --dur-shimmer: 1.4s;
+  --dur-instant: 0.01ms;        /* 움직임 줄이기 설정일 때 */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --op-disabled: 0.5;           /* 꺼진 버튼 */
+  --op-step-off: 0.75;          /* 아직 못 가는 단계 이름. 글자 대비 4.5:1 이상 */
+  --grid-cols: 2;               /* 비교 화면 카드 열 수. 창 크기와 보기 폭에 상관없이 고정 */
+  --card-h: max(420px, 60vh);   /* 비교 카드 높이. 안에서 스크롤하고 정보줄은 고정 */
+  --mobile-w: 390px;            /* 모바일 보기 폭. src/core/compareView.js의 MOBILE_W와 같다 */
+  --card-head-h: 56px;          /* 카드 머리 두 줄 */
   --content-max-w: 960px;
-  --toolbar-pad-left: 80px;
+  --setup-w: 560px;
+  --dialog-w: 560px;
+  --dialog-w-lg: 640px;
+  --dialog-vw: 90vw;
+  --dialog-vw-lg: 92vw;
+  --dialog-max-h: 80vh;
+  --style-list-max-h: 50vh;
+  --toast-max-w: 60vw;
+  --pad-panel: var(--s-6);
+  --picked-w: 520px;
+  --skill-min-w: 260px;         /* 스킬 카드 최소 폭. 열 수는 창 폭에 맞춰 늘어난다 */
+  --must-col: minmax(380px, 480px); /* 확인 화면 오른쪽 열 */
+  /* 창 제어 버튼(신호등): electron/main.js의 trafficLightPosition x와 같은 값을 쓴다 */
+  --traffic-x: 20px;
+  --traffic-w: 64px;   /* 실측 60px(이 맥, 창 왼쪽 20~80)에 여유 4px */
+  --traffic-gap: 16px;
+  --toolbar-pad-left: calc(var(--traffic-x) + var(--traffic-w) + var(--traffic-gap));
 }
