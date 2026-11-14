@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
 import { DEFAULT_SKILLS, parseSkillMd, toRawUrl } from '../core/skills.js';
+import { stylesFromCsv } from '../core/styles.js';
 import { skillCacheDir, customSkillsFile } from './paths.js';
 
 const MAX_BYTES = 500_000;
@@ -29,6 +30,21 @@ export async function loadSkillBody(skill) {
   return text;
 }
 
+/** 스킬 안에 들어 있는 스타일 목록(본문 포함). 고정 커밋 주소라 한 번 받으면 캐시를 쓴다. 스타일이 없는 스킬은 빈 배열 */
+export async function loadSkillStyles(skill) {
+  const source = skill.stylesSource;
+  if (!source) return [];
+  const file = cacheFile(source.url);
+  let text;
+  if (fs.existsSync(file)) text = fs.readFileSync(file, 'utf8');
+  else {
+    text = await download(source.url);
+    fs.mkdirSync(skillCacheDir(), { recursive: true });
+    fs.writeFileSync(file, text);
+  }
+  return stylesFromCsv(text, source);
+}
+
 function readCustom() {
   try {
     return JSON.parse(fs.readFileSync(customSkillsFile(), 'utf8'));
@@ -40,7 +56,7 @@ function readCustom() {
 }
 
 export function listSkills() {
-  return [...DEFAULT_SKILLS, ...readCustom()];
+  return [...DEFAULT_SKILLS, ...readCustom()].map((s) => ({ ...s, hasStyles: Boolean(s.stylesSource) }));
 }
 
 /** 사용자가 넣은 SKILL.md 주소를 받아 미리보기용 스킬을 만든다. 저장은 하지 않는다. */

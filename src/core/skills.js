@@ -38,6 +38,11 @@ export const DEFAULT_SKILLS = [
     source: 'https://github.com/nextlevelbuilder/ui-ux-pro-max-skill/tree/main/.claude/skills/ui-ux-pro-max',
     commit: '6ae86f61f520d6ca229d2f40e070410638c908c5',
     rawUrl: `${RAW}/nextlevelbuilder/ui-ux-pro-max-skill/6ae86f61f520d6ca229d2f40e070410638c908c5/.claude/skills/ui-ux-pro-max/SKILL.md`,
+    // 스킬 저장소의 data/styles.csv에 스타일 89개가 있고 그중 status가 active인 51개를 고를 수 있다(2026-11-14 확인)
+    stylesSource: {
+      url: `${RAW}/nextlevelbuilder/ui-ux-pro-max-skill/6ae86f61f520d6ca229d2f40e070410638c908c5/.claude/skills/ui-ux-pro-max/data/styles.csv`,
+      id: 'Style ID', name: 'Style Category', status: 'Status', active: 'active', summary: 'Best For',
+    },
     license: 'MIT',
     tags: ['지침만 적용'],
     installCmd: '/plugin marketplace add nextlevelbuilder/ui-ux-pro-max-skill\n/plugin install ui-ux-pro-max@ui-ux-pro-max-skill',

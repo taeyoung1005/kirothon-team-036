@@ -17,6 +17,8 @@ const MIN_RETRY_BUDGET_MS = 60_000;
 const pickSkill = (s) => ({
   id: s.id, name: s.name, author: s.author, summary: s.summary, source: s.source,
   tags: s.tags, installCmd: s.installCmd ?? null, license: s.license ?? null,
+  // 스킬 안의 스타일로 나뉜 시안이면 원래 스킬 id와 스타일 이름을 남긴다(스타일 본문은 기록에 넣지 않는다)
+  ...(s.style ? { baseId: s.baseId, style: { id: s.style.id, name: s.style.name } } : {}),
 });
 
 /**

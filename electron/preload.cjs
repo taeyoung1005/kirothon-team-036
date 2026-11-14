@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('skillpick', {
   platform: process.platform,
   preflight: call('preflight'),
   listSkills: call('listSkills'),
+  listStyles: (skillId) => call('listStyles')(check(skillId)),
   previewSkill: call('previewSkill'),
   addSkill: call('addSkill'),
   capture: call('capture'),

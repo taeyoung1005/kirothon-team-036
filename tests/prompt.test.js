@@ -71,3 +71,17 @@ test('재시도 지시문도 폴더 밖 금지와 지어내기 금지를 반복�
 test('재시도 지시문에 항목이 없으면 오류', () => {
   assert.throws(() => buildRetryPrompt([]), /항목/);
 });
+
+test('지시문은 assets.json의 에셋을 역할과 자리에 맞게 쓰라고 한다', () => {
+  const p = buildPrompt(skill);
+  assert.ok(p.includes('assets.json'));
+  for (const word of ['role', 'section', 'markup', '로고']) assert.ok(p.includes(word), `빠진 말: ${word}`);
+  assert.ok(p.includes('assets.json`에 없는 이미지 주소'), '목록에 없는 이미지 주소를 쓰지 말라는 말');
+});
+
+test('스타일이 있는 시안의 지시문은 style.md의 스타일 하나로 만들라고 한다', () => {
+  const p = buildPrompt({ ...skill, name: 'ui-ux-pro-max · Glassmorphism', style: { id: 'glassmorphism', name: 'Glassmorphism', detail: 'd' } });
+  assert.ok(p.includes('.kiro/steering/style.md'));
+  assert.ok(p.includes('Glassmorphism'));
+  assert.equal(buildPrompt(skill).includes('style.md'), false);
+});
