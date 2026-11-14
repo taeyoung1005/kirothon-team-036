@@ -14,8 +14,8 @@
 
 | 항목 | 값 | 센 방법 |
 |---|---|---|
-| 커밋 | 19개 (병합 2개, 그 밖 17개) | `git log --oneline \| wc -l`, `git log --merges --oneline \| wc -l` |
-| 첫 커밋과 마지막 커밋 | 11:14 `Initial commit`, 16:35 병합 | `git log --date=format:'%H:%M'` |
+| 커밋 | 23개 (병합 2개, 그 밖 21개, 이 표를 고친 커밋 제외) | `git log --oneline \| wc -l`, `git log --merges --oneline \| wc -l` |
+| 첫 커밋과 마지막 커밋 | 11:14 `Initial commit`, 17:46 README Demo 링크 | `git log --date=format:'%H:%M'` |
 | 시험 | 172개 통과, 실패 0 (약 6.3초) | `npm test` 출력의 `ℹ tests 172`, `ℹ pass 172`, `ℹ fail 0` |
 | 시험 파일 | 16개 (`tests/*.test.js`), 고정 자료 6개 (`tests/fixtures/`) | `ls` |
 | 소스 파일 | 44개 (`src/` 25, `electron/` 3, `renderer/` 16) | `find <폴더> -type f \| wc -l` |

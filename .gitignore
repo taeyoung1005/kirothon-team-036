@@ -21,3 +21,14 @@ out/
 # 기타
 .DS_Store
 *.log
+
+# 편집기·시험 산출물
+.vscode/
+.idea/
+coverage/
+*.mp4
+*.mov
+
+# 작업 중 시안 (레포에 올리지 않음)
+docs/ui/mockups-v2/
+docs/ui/mockups-v3/
