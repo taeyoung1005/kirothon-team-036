@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { toRequirementsMd } from '../core/mustKeep.js';
 import { stripFrontMatter } from '../core/skills.js';
+import { styleSteering } from '../core/styles.js';
 import { workDirOf } from './paths.js';
 
 const TEMPLATE = new URL('../templates/designer-agent.json', import.meta.url);
@@ -34,11 +35,15 @@ export function createWorkspace(runId, skill, skillBody, items, content, shots) 
     path.join(workDir, '.kiro', 'steering', 'skill.md'),
     `# 디자인 스킬: ${skill.name}\n\n출처: ${skill.source}\n\n${stripFrontMatter(skillBody).trim()}\n`,
   );
+  if (skill.style) write(path.join(workDir, '.kiro', 'steering', 'style.md'), styleSteering(skill.style));
   write(path.join(workDir, '.kiro', 'specs', 'landing', 'requirements.md'), toRequirementsMd(items, content.url));
 
   // 시안에게 주는 content.json은 본문 전체 글자(fullText)를 잘라서 준다
   const forDesigner = { ...content, bodyText: content.fullText.slice(0, BODY_TEXT_LIMIT) };
   delete forDesigner.fullText;
+  // 원본의 이미지·로고·아이콘 등은 역할과 자리를 붙여 따로 준다
+  write(path.join(workDir, 'assets.json'), JSON.stringify(content.assets ?? [], null, 2));
+  delete forDesigner.assets;
   write(path.join(workDir, 'content.json'), JSON.stringify(forDesigner, null, 2));
   write(path.join(workDir, 'must-keep.json'), JSON.stringify(items, null, 2));
   fs.copyFileSync(shots.desktop.file, path.join(workDir, 'original-desktop.png'));

@@ -6,7 +6,8 @@ import { checkKiro, INSTALL_CMD, LOGIN_CMD } from '../src/main/preflight.js';
 import { captureUrl, CaptureError, validateUrl } from '../src/main/capture.js';
 import { buildMustKeep } from '../src/core/mustKeep.js';
 import { stripFrontMatter } from '../src/core/skills.js';
-import { addSkill, listSkills, loadSkillBody, previewSkill } from '../src/main/skillFetch.js';
+import { addSkill, listSkills, loadSkillBody, loadSkillStyles, previewSkill } from '../src/main/skillFetch.js';
+import { expandUnits, styleSteering } from '../src/core/styles.js';
 import { createRunner } from '../src/main/runner.js';
 import { renderCheck } from '../src/main/renderCheck.js';
 import { clearRuns, listRuns, loadRun } from '../src/main/runStore.js';
@@ -58,7 +59,14 @@ export function registerIpc(getWindow) {
     return { ok: true, runId, content, items, trimmed, elapsedMs, shots: { desktop: { height: shots.desktop.height }, mobile: { height: shots.mobile.height } } };
   }));
 
-  handle('startRun', safe(async ({ runId, skillIds, items }) => {
+  handle('listStyles', safe(async (skillId) => {
+    const skill = listSkills().find((s) => s.id === assertId(skillId, 'skillId'));
+    if (!skill) throw new Error(`알 수 없는 스킬이에요: ${skillId}`);
+    const styles = await loadSkillStyles(skill);
+    return { ok: true, styles: styles.map(({ id, name, summary }) => ({ id, name, summary })) };
+  }));
+
+  handle('startRun', safe(async ({ runId, skillIds, styles = {}, items }) => {
     assertId(runId, 'runId');
     const cap = captures.get(runId);
     if (!cap) throw new Error('원본을 다시 불러온 뒤에 시작해 주세요');
@@ -69,10 +77,23 @@ export function registerIpc(getWindow) {
       return skill;
     });
     if (!skills.length) throw new Error('스킬을 하나 이상 골라 주세요');
+    // 스킬 안의 스타일을 고른 경우, 스킬 목록의 스타일인지 확인하고 스타일마다 시안 하나로 펼친다
+    const picked = {};
+    for (const skill of skills) {
+      const ids = Array.isArray(styles[skill.id]) ? styles[skill.id] : [];
+      if (!ids.length) continue;
+      const available = await loadSkillStyles(skill);
+      picked[skill.id] = ids.map((id) => {
+        const style = available.find((x) => x.id === id);
+        if (!style) throw new Error(`${skill.name}에 없는 스타일이에요: ${id}`);
+        return style;
+      });
+    }
+    const units = expandUnits(skills, picked);
     const enabled = new Map(items.map((i) => [i.id, i.enabled !== false]));
     const merged = cap.items.map((i) => ({ ...i, enabled: enabled.get(i.id) ?? i.enabled }));
     const settings = getSettings();
-    runner.startRun({ runId, skills, items: merged, trimmed: cap.trimmed, content: cap.content, shots: cap.shots, settings }, (event) => send('skillpick:run-event', event));
+    runner.startRun({ runId, skills: units, items: merged, trimmed: cap.trimmed, content: cap.content, shots: cap.shots, settings }, (event) => send('skillpick:run-event', event));
     return { ok: true };
   }));
   handle('stopRun', (runId) => runner.stopRun(assertId(runId, 'runId')));
@@ -123,8 +144,13 @@ export function registerIpc(getWindow) {
       if (ask.response !== 0) return { ok: true, canceled: true };
     }
     const skill = { ...variant.skill };
-    const body = await loadSkillBody(listSkills().find((s) => s.id === skillId) ?? skill);
-    const text = `# 디자인 스킬: ${skill.name}\n\n출처: ${skill.source}\n\n${stripFrontMatter(body).trim()}\n`;
+    const base = listSkills().find((s) => s.id === (skill.baseId ?? skillId)) ?? skill;
+    const body = await loadSkillBody(base);
+    let text = `# 디자인 스킬: ${skill.name}\n\n출처: ${skill.source}\n\n${stripFrontMatter(body).trim()}\n`;
+    if (skill.style) {
+      const style = (await loadSkillStyles(base)).find((x) => x.id === skill.style.id);
+      if (style) text += `\n${styleSteering(style)}`;
+    }
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, text);
     return { ok: true, path: target };

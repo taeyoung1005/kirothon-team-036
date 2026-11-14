@@ -11,6 +11,8 @@ const EXTRACT_SOURCE = fs
 // 페이지 안에서 계산된 스타일로 판정하는 훅. 문자열로 주입한다.
 const PAGE_HOOKS = `{
   isVisible: (el) => el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden',
+  sizeOf: (el) => { const r = el.getBoundingClientRect(); return { width: r.width, height: r.height }; },
+  backgroundImageOf: (el) => getComputedStyle(el).backgroundImage,
   looksLikeButton: (el) => {
     const cs = getComputedStyle(el);
     const r = el.getBoundingClientRect();
