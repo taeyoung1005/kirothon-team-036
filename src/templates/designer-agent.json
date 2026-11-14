@@ -1,0 +1,13 @@
+{
+  "name": "designer",
+  "description": "주어진 디자인 스킬로 단일 HTML 랜딩을 만든다",
+  "tools": ["read", "write"],
+  "allowedTools": ["fs_read", "fs_write"],
+  "resources": ["file://.kiro/steering/**/*.md"],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_read", "effect": "allow" },
+      { "capability": "fs_write", "match": ["out/**"], "effect": "allow" }
+    ]
+  }
+}
