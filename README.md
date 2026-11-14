@@ -2,9 +2,9 @@
 
 자기 서비스를 직접 만드는 개발자가 홈페이지 디자인 스킬 여러 개를 URL 하나로 동시에 돌려 결과를 나란히 보고 고르게 해 주는 데스크톱 앱입니다
 
-**Demo:** [소개 영상 47초 (skillpick-demo.mp4)](https://github.com/taeyoung1005/kirothon-team-036/releases/download/demo-v1/skillpick-demo.mp4) · [실제 실행 화면 녹화 29.7초](https://github.com/taeyoung1005/kirothon-team-036/releases/download/demo-v1/skillpick-app-recording.mp4) · [릴리스 페이지](https://github.com/taeyoung1005/kirothon-team-036/releases/tag/demo-v1)
+**Demo:** [소개 영상 46초 (skillpick-demo.mp4)](https://github.com/taeyoung1005/kirothon-team-036/releases/download/demo-v1/skillpick-demo.mp4) · [실제 실행 화면 녹화 29.7초](https://github.com/taeyoung1005/kirothon-team-036/releases/download/demo-v1/skillpick-app-recording.mp4) · [릴리스 페이지](https://github.com/taeyoung1005/kirothon-team-036/releases/tag/demo-v1)
 
-두 영상 모두 `kirothon.ausg.me`를 앱에서 실제로 돌린 화면입니다. 기다리는 구간은 줄였고(원본 수집 7배속, 생성 10배속) 영상 안에 배속을 표시했습니다
+두 영상 모두 `kirothon.ausg.me`를 앱에서 실제로 돌린 화면입니다. 소개 영상은 기다리는 구간을 줄이고(원본 수집 8배속, 생성 12배속, 완료 순간 0.6배속) 화면 오른쪽 위에 배속을 표시했습니다. 실행 화면 녹화는 원본 수집 7배속, 생성 10배속입니다
 
 ![비교 화면](docs/screens/05-compare-desktop.png)
 

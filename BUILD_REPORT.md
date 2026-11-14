@@ -42,7 +42,7 @@
 | 검증 | 직접 실행 | `npm test` 172개 통과(2026-11-14 실측). 실제 공개 사이트 1곳에서 스킬 3개를 앱으로 돌려 `timeline.log`의 시작·종료 시각으로 겹침을 확인 | `docs/screens/` |
 | 앱 엔진 | Kiro CLI 커스텀 에이전트 | 앱이 시안마다 작업 폴더에 `designer` 에이전트 파일을 복사하고 `kiro-cli chat --no-interactive --agent designer --trust-tools=fs_read,fs_write`로 시안을 만듦. 동시 수는 설정 1~6(기본 3) | `src/templates/designer-agent.json`, `src/main/engine.js` |
 | 앱 엔진 | 작업 폴더별 Spec과 Steering 생성 | 앱이 시안마다 Kiro가 읽는 형식으로 파일을 만듦: 고른 스킬 본문은 `.kiro/steering/skill.md`, 고른 스타일은 `.kiro/steering/style.md`, 지켜야 할 것은 수용 기준 문서 `.kiro/specs/landing/requirements.md`. 빠진 항목이 있으면 같은 폴더에서 `--resume`으로 한 번 더 고치게 함 | `src/main/workspace.js`, `src/core/mustKeep.js`, `src/core/prompt.js`, `src/main/runner.js` |
-| 제출물 | Kiro CLI 에이전트와 서브에이전트 | 앱을 `SKILLPICK_CDP_PORT`로 띄우고 `kirothon.ausg.me`를 실제로 돌리며 화면을 프레임 단위로 녹화, 기다리는 구간만 배속(7배, 10배)으로 줄여 29.7초 편집본을 만듦. 같은 실행에서 화면 캡처를 새로 찍고, 서브에이전트가 README·BUILD_REPORT 보강, 발표자료 12장, HyperFrames 소개 영상 47초를 병렬로 만듦 | `docs/screens/`, `docs/presentation/slides.html`, `PRESENTATION.pdf`, 릴리스 `demo-v1` |
+| 제출물 | Kiro CLI 에이전트와 서브에이전트 | 앱을 `SKILLPICK_CDP_PORT`로 띄우고 `kirothon.ausg.me`를 실제로 돌리며 화면을 프레임 단위로 녹화, 기다리는 구간만 배속(7배, 10배)으로 줄여 29.7초 편집본을 만듦. 같은 실행에서 화면 캡처를 새로 찍고, 서브에이전트가 README·BUILD_REPORT 보강, 발표자료 12장, HyperFrames 소개 영상(footage-motion-ad 기준 카메라 이동·속도 조절, 자막은 caption-motion-seqc 스킬) 46초를 만듦 | `docs/screens/`, `docs/presentation/slides.html`, `PRESENTATION.pdf`, 릴리스 `demo-v1` |
 
 훅이 실제로 돌았는지는 따로 확인하지 않았습니다. 로그 파일(`last-test.log`)은 커밋되지 않아 레포에서는 볼 수 없습니다.
 
