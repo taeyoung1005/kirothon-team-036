@@ -7,6 +7,9 @@ const INLINE_TAGS = new Set(['A', 'SPAN', 'STRONG', 'EM', 'B', 'I', 'U', 'SMALL'
 const PRICE_RE = /(₩\s?\d[\d,]*|\d[\d,]*\s?원|\$\s?\d[\d,.]*|€\s?\d[\d,.]*)/g;
 const BUTTON_CLASS_RE = /btn|button|cta/i;
 const MAX_IMAGES = 30;
+const MAX_ASSETS = 80;
+const MAX_SVG_CHARS = 3000;
+const ICON_MAX_PX = 64;
 
 function collapse(s) {
   return String(s ?? '').replace(/\s+/g, ' ').trim();
@@ -71,6 +74,114 @@ function uniqueBy(list, key) {
     out.push(item);
   }
   return out;
+}
+
+
+// ----- 에셋 수집: 이미지, 배경, 영상, 인라인 SVG, 파비콘, 공유 이미지를 역할과 자리(가까운 제목)와 함께 모은다.
+// 시안을 만드는 에이전트가 원본의 에셋을 알맞은 자리에 쓰게 하려는 목록이다. data: 주소는 너무 커서 뺀다.
+
+function pickSrcset(srcset) {
+  const candidates = String(srcset ?? '').split(',').map((c) => c.trim().split(/\s+/)).filter((c) => c[0]);
+  if (!candidates.length) return '';
+  const weight = (c) => parseFloat(c[1] ?? '1') || 1;
+  return candidates.reduce((best, c) => (weight(c) >= weight(best) ? c : best))[0];
+}
+
+function backgroundUrls(value) {
+  const urls = [];
+  for (const m of String(value ?? '').matchAll(/url\(\s*(['"]?)(.*?)\1\s*\)/g)) if (m[2]) urls.push(m[2]);
+  return urls;
+}
+
+function roleFor({ kind, el, alt, url, width, height, inHeader }) {
+  if (kind === 'favicon') return 'icon';
+  if (kind === 'social') return 'social';
+  if (kind === 'video' || kind === 'video-poster') return 'video';
+  if (kind === 'background') return 'background';
+  const hint = `${alt} ${url ?? ''} ${(el.getAttribute && el.getAttribute('class')) || ''} ${(el.getAttribute && el.getAttribute('id')) || ''}`;
+  const big = Math.max(width || 0, height || 0);
+  // 헤더 안의 로고는 이 사이트의 로고. 본문에 있는 로고는 파트너·고객 로고 줄일 가능성이 커서 따로 구분한다
+  const logoLike = /logo|brand|wordmark/i.test(hint);
+  if (inHeader && (logoLike || (big > 0 && big <= 240 && kind === 'image'))) return 'logo';
+  if (logoLike) return 'partner-logo';
+  if (kind === 'svg') return big && big > ICON_MAX_PX ? 'graphic' : 'icon';
+  if (/icon/i.test(hint) || (big > 0 && big <= ICON_MAX_PX)) return 'icon';
+  if (/avatar|profile|portrait/i.test(hint)) return 'avatar';
+  return 'photo';
+}
+
+export function collectAssets(document, baseUrl, opts = {}) {
+  const shown = (el) => {
+    if (typeof opts.isVisible === 'function') return opts.isVisible(el);
+    for (let cur = el; cur && cur.nodeType === 1; cur = cur.parentElement) if (hiddenByAttributes(cur)) return false;
+    return true;
+  };
+  const sizeOf = (el) => {
+    const hooked = typeof opts.sizeOf === 'function' ? opts.sizeOf(el) : null;
+    if (hooked && hooked.width) return { width: Math.round(hooked.width), height: Math.round(hooked.height) };
+    return { width: parseInt(el.getAttribute('width'), 10) || 0, height: parseInt(el.getAttribute('height'), 10) || 0 };
+  };
+  const headingText = (el) => collapse(el.textContent ?? '').slice(0, 80);
+  const found = [];
+  const add = (record) => { if (record) found.push(record); };
+  const isHeading = (el) => /^H[1-3]$/.test(el.tagName.toUpperCase());
+
+  let lastHeading = '';
+  const root = document.body ?? document.documentElement;
+  const elements = Array.from(root.querySelectorAll('*'));
+  for (const el of elements) {
+    const tag = el.tagName.toUpperCase();
+    if (isHeading(el) && shown(el)) { lastHeading = headingText(el); continue; }
+    const inHeader = Boolean(el.closest('header, nav, [role="banner"]'));
+    const base = (kind, url, extra = {}) => {
+      const { width, height } = sizeOf(el);
+      const alt = collapse(el.getAttribute('alt') ?? el.getAttribute('aria-label') ?? '');
+      return { kind, url, alt, width, height, inHeader, section: lastHeading, ...extra, role: roleFor({ kind, el, alt, url, width, height, inHeader }) };
+    };
+    const okUrl = (u) => { const a = absolute(u, baseUrl); return a && /^https?:/i.test(a) ? a : null; };
+
+    if (tag === 'IMG' && shown(el)) {
+      const src = el.getAttribute('src') || el.getAttribute('data-src') || pickSrcset(el.getAttribute('srcset') || el.getAttribute('data-srcset'));
+      // src(또는 data-src)가 없고 srcset만 있으면 가장 큰 후보를 쓴다
+      const url = okUrl(src);
+      if (url) add(base('image', url));
+    } else if (tag === 'VIDEO' && shown(el)) {
+      const poster = okUrl(el.getAttribute('poster'));
+      if (poster) add(base('video-poster', poster));
+      const src = okUrl(el.getAttribute('src') || el.querySelector('source[src]')?.getAttribute('src'));
+      if (src) add(base('video', src));
+    } else if (tag === 'SVG' && shown(el) && !el.closest('button, a[href] svg svg')) {
+      const markup = String(el.outerHTML ?? '');
+      const { width, height } = sizeOf(el);
+      if (markup && markup.length <= MAX_SVG_CHARS && (!width || width >= 12)) add(base('svg', undefined, { markup }));
+    }
+    // CSS 배경: 페이지 안에서는 계산된 스타일을, 그 밖에서는 인라인 style 속성을 읽는다
+    const bgValue = typeof opts.backgroundImageOf === 'function' ? opts.backgroundImageOf(el) : (el.getAttribute('style') ?? '').match(/background(?:-image)?\s*:[^;]*/i)?.[0];
+    if (bgValue && /url\(/i.test(bgValue) && shown(el) && tag !== 'HTML') {
+      const inner = Array.from(el.querySelectorAll('h1, h2, h3')).find((h) => shown(h));
+      for (const raw of backgroundUrls(bgValue)) {
+        const url = okUrl(raw);
+        if (url) add(base('background', url, { section: inner ? headingText(inner) : lastHeading }));
+      }
+    }
+  }
+  const head = document.head ?? document.documentElement;
+  for (const link of Array.from(head.querySelectorAll('link[rel*="icon"]'))) {
+    const url = absolute(link.getAttribute('href'), baseUrl);
+    if (url && /^https?:/i.test(url)) add({ kind: 'favicon', role: 'icon', url, alt: '', width: 0, height: 0, inHeader: false, section: '' });
+  }
+  const og = head.querySelector('meta[property="og:image"]')?.getAttribute('content');
+  const ogUrl = og ? absolute(og, baseUrl) : null;
+  if (ogUrl && /^https?:/i.test(ogUrl)) add({ kind: 'social', role: 'social', url: ogUrl, alt: '', width: 0, height: 0, inHeader: false, section: '' });
+
+  // 같은 에셋(주소 또는 SVG 마크업)은 한 번만 두고 쓰인 횟수를 센다
+  const merged = new Map();
+  for (const a of found) {
+    const key = `${a.kind}|${a.url ?? a.markup}`;
+    const prev = merged.get(key);
+    if (prev) prev.uses += 1; else merged.set(key, { ...a, uses: 1 });
+  }
+  return Array.from(merged.values()).slice(0, MAX_ASSETS).map((a, i) => ({ id: `asset-${i + 1}`, ...a }));
 }
 
 export function visibleText(document, opts = {}) {
@@ -159,5 +270,7 @@ export function extractContent(document, baseUrl, opts = {}) {
     (o) => o.u,
   ).map((o) => o.u).slice(0, MAX_IMAGES);
 
-  return { url: baseUrl, title, description, h1, h2, hero, buttons, prices, nav, images, fullText };
+  const assets = collectAssets(document, baseUrl, opts);
+
+  return { url: baseUrl, title, description, h1, h2, hero, buttons, prices, nav, images, assets, fullText };
 }

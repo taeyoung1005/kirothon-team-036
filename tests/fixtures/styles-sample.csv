@@ -1,0 +1,7 @@
+No,Style Category,Type,Keywords,Primary Colors,Best For,AI Prompt Keywords,Style ID,Status
+1,Minimalism & Swiss Style,General,"Clean, simple, ""quoted"", spacious",Black #000000,"Enterprise apps, dashboards","Design a minimalist landing page.
+Use: white space, grid",minimalism-and-swiss-style,active
+2,Old Thing,General,legacy,Grey,Nothing,Do not use,old-thing,deprecated
+3,Glassmorphism,General,Frosted glass,Translucent,Modern SaaS,Design a glassmorphic interface,glassmorphism,active
+4,Bauhaus (包豪斯),General,Geometric,Primary,Posters,Design in Bauhaus,bauhaus,active
+5,Extra,Landing Page,x,y,z,w,extra-style,supplemental

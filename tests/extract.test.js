@@ -98,3 +98,66 @@ test('extractContent: looksLikeButton 훅이 참이면 버튼으로 세고 내�
   assert.deepEqual(c.buttons.map((b) => b.href), ['https://example.com/in', 'https://example.com/join']);
   assert.deepEqual(c.nav.map((n) => n.text), ['문서']);
 });
+
+const assetsDoc = parseHTML(fs.readFileSync(new URL('./fixtures/assets.html', import.meta.url), 'utf8')).document;
+const assetContent = extractContent(assetsDoc, 'https://example.com/');
+const byUrl = (u) => assetContent.assets.find((a) => a.url === `https://example.com${u}`);
+
+test('assets: 이미지에 역할, 알트, 크기, 가까운 제목을 붙이고 같은 주소는 한 번만 센다', () => {
+  const logo = byUrl('/img/logo.svg');
+  assert.equal(logo.kind, 'image');
+  assert.equal(logo.role, 'logo');
+  assert.equal(logo.alt, 'Acme 로고');
+  assert.equal(logo.width, 120);
+  assert.equal(logo.inHeader, true);
+  assert.equal(logo.uses, 2);
+  const hero = byUrl('/img/hero.png');
+  assert.equal(hero.role, 'photo');
+  assert.equal(hero.section, 'Hello world');
+  assert.equal(hero.height, 800);
+});
+
+test('assets: 본문에 있는 로고는 partner-logo로 구분한다', () => {
+  assert.equal(byUrl('/img/partner-logo.png').role, 'partner-logo');
+});
+
+test('assets: data-src와 srcset만 있는 이미지도 모은다', () => {
+  assert.ok(byUrl('/img/lazy.jpg'));
+  assert.ok(byUrl('/img/only-2x.png'), 'srcset에서는 가장 큰 후보를 쓴다');
+});
+
+test('assets: CSS 배경, 영상, 포스터, 아이콘, 파비콘, 공유 이미지를 종류별로 모은다', () => {
+  assert.deepEqual([byUrl('/img/bg.jpg').kind, byUrl('/img/bg.jpg').role, byUrl('/img/bg.jpg').section], ['background', 'background', 'Features']);
+  assert.equal(byUrl('/img/icon-a.png').role, 'icon');
+  assert.equal(byUrl('/img/poster.jpg').kind, 'video-poster');
+  assert.equal(byUrl('/vid/demo.mp4').kind, 'video');
+  assert.equal(byUrl('/favicon.ico').kind, 'favicon');
+  assert.equal(byUrl('/og.png').kind, 'social');
+});
+
+test('assets: 인라인 SVG는 마크업째로 담는다', () => {
+  const svg = assetContent.assets.find((a) => a.kind === 'svg');
+  assert.match(svg.markup, /<circle/);
+  assert.equal(svg.role, 'icon');
+  assert.equal(svg.url, undefined);
+});
+
+test('assets: data: 주소와 숨겨진 이미지는 뺀다', () => {
+  assert.equal(assetContent.assets.some((a) => String(a.url).startsWith('data:')), false);
+  assert.equal(byUrl('/img/hidden.png'), undefined);
+});
+
+test('assets: 렌더된 크기와 계산된 배경을 넘겨 주는 훅을 쓴다', () => {
+  const withHooks = extractContent(assetsDoc, 'https://example.com/', {
+    sizeOf: (el) => (el.getAttribute('src') === '/img/hero.png' ? { width: 1000, height: 500 } : null),
+    backgroundImageOf: (el) => (el.tagName === 'SECTION' && el.querySelector('h1') ? 'url("https://cdn.example.com/hero-bg.webp")' : ''),
+  });
+  assert.equal(withHooks.assets.find((a) => a.url === 'https://example.com/img/hero.png').height, 500);
+  const bg = withHooks.assets.find((a) => a.url === 'https://cdn.example.com/hero-bg.webp');
+  assert.equal(bg.kind, 'background');
+  assert.equal(bg.section, 'Hello world');
+});
+
+test('assets: 기존 images 목록(보이는 img 주소)은 그대로다', () => {
+  assert.deepEqual(content.images, ['https://example.com/img/hero.png', 'https://cdn.example.com/team.jpg']);
+});
