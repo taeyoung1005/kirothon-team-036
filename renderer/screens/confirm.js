@@ -1,6 +1,6 @@
 import { h, displayHref, mount } from '../lib/dom.js';
 import { go, registerScreen, state } from '../app.js';
-import { captureReason, ensureCapture, onCaptureChange } from '../lib/session.js';
+import { captureReason, ensureCapture, onCaptureChange, pickedStyleIds, unitCount } from '../lib/session.js';
 
 const GROUPS = [
   ['h1', '제목'], ['h2', '소제목'], ['hero', '첫 단락'], ['button', '버튼'], ['price', '가격'], ['nav', '내비'],
@@ -63,7 +63,7 @@ function readyView(cap) {
   const updateCounts = () => {
     const enabled = cap.items.filter((i) => i.enabled).length;
     countEl.textContent = `${enabled}개`;
-    const n = state.selectedSkillIds.length;
+    const n = unitCount();
     startBtn.textContent = `시안 ${n}개 만들기 →`;
     startBtn.disabled = enabled === 0 || n === 0;
   };
@@ -89,6 +89,7 @@ function readyView(cap) {
     const r = await window.skillpick.startRun({
       runId: cap.runId,
       skillIds: state.selectedSkillIds,
+      styles: pickedStyleIds(),
       items: cap.items.map(({ id, enabled }) => ({ id, enabled })),
     });
     if (!r.ok) { startBtn.disabled = false; startBtn.textContent = '시작하지 못했어요. 다시 눌러 주세요'; console.error(r); return; }

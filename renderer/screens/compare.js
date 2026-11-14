@@ -113,7 +113,7 @@ function render() {
       const bodyHolder = h('div', { class: 'vcard-body' });
       const footHolder = h('div', { class: 'vcard-foot' });
       const head = h('button', {
-        type: 'button', class: 'vcard-head', title: '크게 보기', 'aria-label': `${v.skill.name} 크게 보기`,
+        type: 'button', class: 'vcard-head', title: `${v.skill.name} 크게 보기`, 'aria-label': `${v.skill.name} 크게 보기`,
         onclick: () => go('detail', { skillId: v.skillId }),
       }, h('span', { class: 'name' }, v.skill.name), h('span', { class: 'open' }, '크게 보기 ↗'));
       const el = h('article', { class: 'vcard', 'aria-label': v.skill.name }, head, bodyHolder, footHolder);

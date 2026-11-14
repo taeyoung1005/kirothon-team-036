@@ -47,3 +47,18 @@ export function ensureCapture(url, { force = false } = {}) {
   notify();
   return promise;
 }
+
+/** 만들 시안 수: 스타일을 고른 스킬은 스타일 수만큼, 아니면 하나 */
+export function unitCount() {
+  return (state.selectedSkillIds ?? []).reduce((n, id) => n + Math.max(1, (state.selectedStyles[id] ?? []).length), 0);
+}
+
+/** 선택한 스킬의 스타일 id만 뽑아 startRun에 넘긴다 */
+export function pickedStyleIds() {
+  const out = {};
+  for (const id of state.selectedSkillIds ?? []) {
+    const list = state.selectedStyles[id] ?? [];
+    if (list.length) out[id] = list.map((x) => x.id);
+  }
+  return out;
+}

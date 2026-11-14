@@ -14,6 +14,7 @@ export const state = {
   url: '',
   skills: [],
   selectedSkillIds: null, // null이면 기본 선택을 쓴다
+  selectedStyles: {},     // 스킬 id -> 고른 스타일 [{id, name}]. 고르면 스타일마다 시안 하나가 된다
   capturing: null,        // 원본 수집 Promise
   capture: null,          // {runId, content, items, trimmed, elapsedMs}
   captureError: null,

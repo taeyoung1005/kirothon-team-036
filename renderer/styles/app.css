@@ -309,3 +309,16 @@ button.vcard-head:hover { background: var(--surface-2); }
 .setting-label { font-weight: var(--fw-medium); }
 .setting-row input[type=checkbox] { accent-color: var(--accent); width: var(--s-4); height: var(--s-4); }
 .input.narrow { width: var(--s-20); }
+
+/* 스킬 안의 스타일 고르기 */
+.skill-styles { grid-column: 2; font-size: var(--fs-13); }
+.skill-styles .link-btn { padding: 0; min-height: var(--control-h); }
+.style-dialog { width: min(640px, 92vw); max-height: 80vh; }
+.style-list { overflow-y: auto; max-height: 50vh; display: flex; flex-direction: column; border: var(--line-w) solid var(--line); border-radius: var(--r-control); }
+.style-row { display: flex; align-items: flex-start; gap: var(--s-3); padding: var(--s-2) var(--s-3); border-top: var(--line-w) solid var(--line); cursor: pointer; }
+.style-row:first-child { border-top: 0; }
+.style-row:hover { background: var(--surface-2); }
+.style-row input { margin-top: var(--s-1); accent-color: var(--accent); width: var(--s-4); height: var(--s-4); flex: none; }
+.style-text { display: flex; flex-direction: column; min-width: 0; }
+.style-name { font-weight: var(--fw-medium); }
+.style-sum { font-size: var(--fs-12); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
