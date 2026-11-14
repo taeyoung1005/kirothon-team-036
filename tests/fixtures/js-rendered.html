@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><title>스크립트로 그리는 페이지</title></head>
+<body><div id="root"></div>
+<script>
+  setTimeout(() => {
+    document.getElementById('root').innerHTML =
+      '<h1>늦게 나타나는 제목</h1><p>이 문단은 이천 밀리초 뒤에 스크립트가 그려 넣은 첫 단락입니다.</p><a class="btn" href="/go">시작하기</a>';
+  }, 2000);
+</script></body></html>
