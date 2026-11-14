@@ -1,0 +1,8 @@
+SCREEN 5 comparison grid, mobile mode. Breadcrumb "비교" filled indigo. Toolbar row: mono "theaibuilders.dev", segmented toggle "데스크톱 | 모바일" (모바일 selected), checkbox "☐ 통과한 것만", toggle "↕ 같이 스크롤", dropdown "정렬: 완료 순 ▾". Below, a row of SIX tall narrow portrait cards (390px-wide phone pages, filling the window height to the bottom, no empty space below), each with title strip, dense rendered mobile page showing hero and several sections below, and info footer.
+1 "원본" dashed border: bland white/light gray mobile page, small heading "AI 빌더를 위한 커뮤니티", gray button "지금 참가하기", plain lists. Footer "원본".
+2 "frontend-design": bold editorial cream page, giant black serif headline "AI 빌더를 위한 커뮤니티", orange and green blocks, black pill button "지금 참가하기", big numbered list. Footer green "✓ 14/14" "2분 13초".
+3 "web-design-guidelines": clean SaaS white page, navy headline, blue button "지금 참가하기", stacked feature cards with icons. Footer amber "⚠ 13/14" tag "가격 누락".
+4 "minimalist-ui": minimal off-white page, thin headline, tiny black button, sage accent. Footer green "✓ 14/14" "3분 02초".
+5 "brutalist-web": harsh yellow #FFE600 background, thick black borders, huge uppercase mono-ish headline "AI 빌더를 위한 커뮤니티", black button "지금 참가하기". Footer green "✓ 14/14" "4분 40초".
+6 "ui-ux-pro-max": dim empty card, spinner, "● 만드는 중 03:10" indigo.
+Previews clearly different from each other.
